@@ -40,7 +40,7 @@ function jsonApi(req, res, next) {
     res.jsonApi = _jsonApi;
 
     // Override res.json and send error if used
-    res.json = () => res.jsonApi(new Error("Must use 'res.jsonApi(err, data)' to send a response"));
+    res.json = () => next(new Error("Must use 'res.jsonApi(err, data)' to send a response"));
 
     // next middleware
     next();
@@ -67,7 +67,12 @@ ROUTES.forEach(route => {
 
 // Not found error
 router.use(function notFound(req, res, next) {
-    return res.jsonApi(httpError(404, 'API route not found'));
+    return next(httpError(404, 'API route not found'));
+});
+
+router.use(function (err, req, res, next) {
+    res.status(err.status || 500);
+    return res.jsonApi(err);
 });
 
 module.exports = router;

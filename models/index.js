@@ -26,4 +26,8 @@ files.forEach(file => {
     models[modelName] = model;
 });
 
+models.disconnect = async function () {
+  await mongoose.disconnect();
+}
+
 module.exports = models;

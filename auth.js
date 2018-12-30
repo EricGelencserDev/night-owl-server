@@ -30,27 +30,48 @@ module.exports.isLoggedIn = (req, res, next) => {
 module.exports.authenticate = async (email, password, done) => {
     try {
         let { user, isAuth } = await Users.authenticate(email, password);
-        if (!isAuth) return done(null, false);
-        else return done(null, user);
+        if (!user) return done(null, null, false);
+        if (!isAuth) return done(null, user, false);
+        return done(null, user, true);
     }
     catch (err) {
         return done(err);
     }
 }
 
-module.exports.authorize = (roles) => {
+module.exports.authorize = (rules) => {
     return (req, res, next) => {
-        user = req.user;
-        let isAuth = roles.some(desc => {
-            let role = desc.split(':');
-            if (role[0] === 'admin') return req.user.isAdmin;
-            if (role[0] === 'self') {
-                let idField = role[1];
-                if (idField) return req.user[idField] = req.params[idField];
-                else return res.jsonApi(httpError(500, "no id field specified in 'self' role"));
-            }
-        });
-        if (isAuth) next();
-        else res.jsonApi(httpError(401, 'not authorized'));
+        try {
+            let user = req.user;
+
+            // If any rule passes, allow through
+            let isAuth = rules.some(rule => {
+                // Handle user field rules
+                if (rule.fields) {
+                    let fields = Object.keys(rule.fields);
+                    return fields.every(field => {
+                        return user[field] === rule.fields[field];
+                    });
+                };
+
+                // Handle request parameter rules
+                if (rule.params) {
+                    let params = Object.keys(rule.params);
+                    return params.every(param => {
+                        return user[rule.params[param]] === req.params[param];
+                    });
+                };
+            });
+
+            // If a rule passed allow request through
+            if (isAuth) return next();
+
+            // If all rules fails, reject route
+            else return next(httpError(401, 'not authorized'));
+        }
+        // If an error occurs reject with httpError
+        catch (err) {
+            return next(httpError(500, 'error in route authorization'));
+        }
     }
 }

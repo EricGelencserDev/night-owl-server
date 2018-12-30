@@ -55,7 +55,6 @@ UsersSchema.statics.authenticate = async function (email, password) {
   let isAuth = false;
   if (user) {
     isAuth = await bcrypt.compare(password, user.password);
-    if (!isAuth) user = null;
   }
   return { user, isAuth }
 }

@@ -57,6 +57,12 @@ router.get('/:email', authorize([rules.admin, rules.self]), async (req, res, nex
 router.put('/:email', authorize([rules.admin, rules.self]), async (req, res, next) => {
   let userEmail = req.params.email;
   let userData = req.body;
+  
+  if (userData.password) {
+    let error = Users.validatePassword(userData.password);
+    if (error) return next(httpError(400, error));
+  }
+
   try {
     let user = await Users.findOne({ email: userEmail });
     if (!user) return next(httpError(404, 'user not found'));

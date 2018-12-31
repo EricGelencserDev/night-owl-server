@@ -8,18 +8,18 @@ class User {
     constructor(role) {
         this.name = uniqid();
         this.email = `${this.name}@gmail.com`;
-        this.password = 'testpassword';
+        this.password = uniqid();
         this.role = role;
     }
 
-    get credentials () {
+    get credentials() {
         return {
             email: this.email,
             password: this.password
         }
     }
 
-    toJSON () {
+    toJSON() {
         return {
             name: this.name,
             email: this.email,
@@ -56,7 +56,7 @@ async function createUser(user) {
 }
 
 async function getUsers(email) {
-    let userQuery = email?`/${email}`:'';
+    let userQuery = email ? `/${email}` : '';
     try {
         return await agent
             .get(url(`users/${userQuery}`))
@@ -92,23 +92,27 @@ async function logout() {
     }
 }
 
+//
+// Setup test users
+//
 admin = new User('admin');
 user = new User('user');
 
-
-
 describe('test user endpoint', function () {
-    it ('should initialize the database using the model', async function () {
-        await Users.remove({});
-        let users = await Users.find();
-        users.should.be.an('array');
-        users.length.should.eq(0);
-        await new Users(admin).save();
-        users = await Users.find();
-        users.should.be.an('array');
-        users.length.should.eq(1);
-        await disconnect();
-        return;
+    it('should initialize the database using the model', async function () {
+        try {
+            await Users.remove({});
+            let users = await Users.find();
+            users.should.be.an('array');
+            users.length.should.eq(0);
+            await new Users(admin).save();
+            users = await Users.find();
+            users.should.be.an('array');
+            users.length.should.eq(1);
+        } finally {
+            await disconnect();
+            return;
+        }
     })
 
     it('should login as admin', async function () {
@@ -150,13 +154,23 @@ describe('test user endpoint', function () {
         return resp;
     })
 
+    it('should reject invalid passwords', async function () {
+        let updatedUser = {
+            ...user
+        }
+        updatedUser.password = 'fail';
+        let resp = await updateUser(updatedUser);
+        resp.status.should.eq(400);
+        return resp;
+    })
+
     it('should logout admin user', async function () {
         let resp = await logout();
         resp.status.should.eq(200);
         return resp;
     })
 
-    it('reject logged out user from creating a new user', async function () {
+    it('should reject logged out user from creating a new user', async function () {
         let resp = await createUser(user);
         resp.status.should.eq(401);
         return resp;

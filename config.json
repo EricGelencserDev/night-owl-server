@@ -1,5 +1,15 @@
 {
     "db": {
         "URL": "mongodb://localhost:27017/database"
+    },
+    "passwords": {
+        "rounds": 12,
+        "length": {
+            "min": 8,
+            "max": 20
+        }
+    },
+    "sessions": {
+        "secret": "change_this_secret_string"
     }
 }

@@ -8,6 +8,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const routes = require('./routes');
 const { authenticate } = require('./auth');
+const config = require('./config');
 
 passport.use(new LocalStrategy({
   usernameField: 'email',
@@ -25,7 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session({
-  secret: 'thisismysecret',
+  secret: config.sessions.secret,
   resave: false,
   saveUninitialized: true
 }));

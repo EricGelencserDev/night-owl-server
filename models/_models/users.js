@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-
+const pwConf = require('../../config').passwords;
 const Schema = mongoose.Schema;
 
 //
@@ -34,7 +34,7 @@ const ALLOWED_UPDATES = [
 async function hashPassword(next) {
   if (this.password) {
     console.log("Hashing pw");
-    this.password = await bcrypt.hash(this.password, 12);
+    this.password = await bcrypt.hash(this.password, pwConf.rounds);
   }
   return next();
 }
@@ -57,6 +57,14 @@ UsersSchema.statics.authenticate = async function (email, password) {
     isAuth = await bcrypt.compare(password, user.password);
   }
   return { user, isAuth }
+}
+
+UsersSchema.statics.validatePassword = function (password) {
+  let error = null;
+  if (password.length < pwConf.length.min || password.length > pwConf.length.max) {
+    error = `invalid password length ${password.length} (${JSON.stringify(pwConf.length)}`;
+  }
+  return error;
 }
 
 //

@@ -32,10 +32,7 @@ const ALLOWED_UPDATES = [
 // Middleware for bcrypt hashing a users password 
 //
 async function hashPassword(next) {
-  if (this.password) {
-    console.log("Hashing pw");
-    this.password = await bcrypt.hash(this.password, pwConf.rounds);
-  }
+  if (this.password) this.password = await bcrypt.hash(this.password, pwConf.rounds);
   return next();
 }
 

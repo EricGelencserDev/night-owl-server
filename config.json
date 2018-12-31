@@ -1,7 +1,4 @@
 {
-    "db": {
-        "URL": "mongodb://localhost:27017/database"
-    },
     "passwords": {
         "rounds": 12,
         "length": {

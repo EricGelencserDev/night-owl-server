@@ -1,10 +1,15 @@
 const path = require('path');
 const mongoose = require('mongoose');
-const { db } = require('../config');
 const { requireDir } = require('../utils');
 
 // Connect to the mongo DB
-mongoose.connect(db.URL, { useNewUrlParser: true }, err => {
+const DB_HOST = process.env.DB_HOST || 'localhost';
+const DB_PORT = process.env.DB_PORT || 27017;
+const DB_NAME = process.env.DB_NAME || 'database';
+
+const dbUrl = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+
+mongoose.connect(dbUrl, { useNewUrlParser: true }, err => {
   if (err) {
     console.log("Error connecting to database", err);
     process.exit(1);

@@ -15,7 +15,7 @@ router.use(jsonApi);
 
 // List routes
 router.get('/', (req, res, next) => {
-    res.jsonApi(null, RouteList.routes);
+    res.jsonApi(null, routeList.routes);
 })
 
 // Load routes in directory

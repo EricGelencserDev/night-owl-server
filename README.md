@@ -56,5 +56,45 @@ To connect to the mongo client
  
     docker exec -it database mongo
 
+# Tests
 
+To run the API tests use
+
+    npm test
+
+This will run a set of tests against the user endpoints:
+
+```
+npm test
+
+> server@0.0.0 test /home/rob/code/personal/mongodb-node-api
+> mocha
+
+
+
+(node:26170) ExperimentalWarning: The http2 module is an experimental API.
+  test user endpoint
+(node:26170) DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
+Connected to database
+(node:26170) DeprecationWarning: collection.remove is deprecated. Use deleteOne, deleteMany, or bulkWrite instead.
+    ✓ should initialize the database using the model (268ms)
+    ✓ should login as admin (260ms)
+    ✓ should allow admin to create a user (243ms)
+    ✓ should allow admin to list users
+    ✓ should allow admin to get test user
+    ✓ should allow admin to update user (237ms)
+    ✓ should reject invalid passwords
+    ✓ should logout admin user
+    ✓ should reject logged out user from creating a new user
+    ✓ should login as test user (228ms)
+    ✓ should reject test user creating a new user
+    ✓ should reject test user listing users
+    ✓ should allow test user to update itself (235ms)
+    ✓ should logout test user
+    ✓ should login as test user (new password) (228ms)
+    ✓ should allow user to get itself
+
+
+  16 passing (2s)
+  ```
 

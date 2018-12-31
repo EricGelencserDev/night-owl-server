@@ -6,8 +6,9 @@ The initial framework implements a set of "user" endpoints to do basic CRUD oper
 
 # Adding new routes
 
+Routes are auto loaded from the ./routes/api/controllers directory.
 To add additional endpoints, simply add a new file to the ./routes/api/controllers directory with 
-the route endpoint definitions. 
+the route endpoint definitions. These endpoints will be loaded and registered with the express API router.
 
 The endpoint path will be the same as the filename containing the route controllers.
 

@@ -2,7 +2,7 @@ const express = require('express');
 const httpError = require('http-errors');
 const router = express.Router();
 const { Users } = require('../../../models');
-const { authorize } = require('../../../auth');
+const { authorize, isLoggedIn } = require('../../../auth');
 
 // Route authorization rules
 let rules = {
@@ -17,6 +17,9 @@ let rules = {
     }
   }
 }
+
+// Protect all user routes from non-logged in users
+router.use(isLoggedIn);
 
 /* GET users listing with query string */
 router.get('/', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
@@ -85,5 +88,4 @@ router.put('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res,
   }
 });
 
-module.exports.isPrivate = true;
-module.exports.router = router;
+module.exports = router;

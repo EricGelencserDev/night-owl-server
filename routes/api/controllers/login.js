@@ -18,4 +18,4 @@ function authenticate(req, res, next) {
 /* POST login */
 router.post('/', authenticate);
 
-module.exports.router = router;
+module.exports = router;

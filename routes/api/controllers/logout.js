@@ -8,4 +8,4 @@ router.post('/', async (req, res, next) => {
     res.jsonApi(null, {});
 });
 
-module.exports.router = router;
+module.exports = router;

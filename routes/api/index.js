@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const httpError = require('http-errors');
+const HttpError = require('http-errors');
 const RouteList = require('../../route-list');
 const RouteLoader = require('../../route-loader');
 const jsonApi = require('../../json-api');
@@ -23,7 +23,7 @@ RouteLoader(router, CONTROLLER_DIR);
 
 // Not found error
 router.use(function notFound(req, res, next) {
-    return next(httpError(404, 'API route not found'));
+    return next(HttpError(404, 'API route not found'));
 });
 
 router.use(function (err, req, res, next) {

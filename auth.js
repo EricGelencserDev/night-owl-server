@@ -1,5 +1,5 @@
 const passport = require('passport');
-const httpError = require('http-errors');
+const HttpError = require('http-errors');
 const { Users } = require('./models');
 
 passport.serializeUser(function (user, done) {
@@ -23,7 +23,7 @@ module.exports.isLoggedIn = (req, res, next) => {
         console.log('authenticated route authorized');
         return next();
     } else {
-        return res.jsonApi(httpError(401, 'not authorized'))
+        return res.jsonApi(HttpError(401, 'not authorized'))
     }
 }
 
@@ -67,11 +67,11 @@ module.exports.authorize = (rules) => {
             if (isAuth) return next();
 
             // If all rules fails, reject route
-            else return next(httpError(401, 'not authorized'));
+            else return next(HttpError(401, 'not authorized'));
         }
-        // If an error occurs reject with httpError
+        // If an error occurs reject with HttpError
         catch (err) {
-            return next(httpError(500, 'error in route authorization'));
+            return next(HttpError(500, 'error in route authorization'));
         }
     }
 }

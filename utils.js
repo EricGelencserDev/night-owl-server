@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const httpError = require('http-errors');
+const HttpError = require('http-errors');
 
 //
 // Get all './js' files from a directory and return an array

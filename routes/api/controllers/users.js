@@ -4,13 +4,14 @@ const router = express.Router();
 const { Users } = require('../../../models');
 const { authorize } = require('../../../auth');
 
+// Route authorization rules
 let rules = {
-  admin: {
-    fields:  {
+  isAdmin: {
+    fields: {
       role: 'admin'
     }
   },
-  self: {
+  isSelf: {
     params: {
       email: 'email'
     }
@@ -18,7 +19,7 @@ let rules = {
 }
 
 /* GET users listing with query string */
-router.get('/', authorize([rules.admin, rules.self]), async (req, res, next) => {
+router.get('/', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
   try {
     let query = JSON.parse(req.query.q || null);
     let users = await Users.find(query);
@@ -42,7 +43,7 @@ router.get('/me', async (req, res, next) => {
 });
 
 /* GET user by email */
-router.get('/:email', authorize([rules.admin, rules.self]), async (req, res, next) => {
+router.get('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
   try {
     let query = { email: req.params.email }
     let user = await Users.findOne(query);
@@ -53,15 +54,23 @@ router.get('/:email', authorize([rules.admin, rules.self]), async (req, res, nex
   }
 });
 
+/* POST user create. */
+router.post('/', authorize([rules.isAdmin]), async (req, res, next) => {
+  try {
+    let { user, isNew } = await Users.findOrCreateByEmail(req.body);
+    if (isNew) return res.jsonApi(null, user);
+    else return next(httpError(409, "user already exists"));
+  }
+  catch (err) {
+    if (err.name && err.name === 'ValidationError') return next(httpError(400, err));
+    else return next(httpError(500, err));
+  }
+});
+
 /* PUT user update (by email) */
-router.put('/:email', authorize([rules.admin, rules.self]), async (req, res, next) => {
+router.put('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
   let userEmail = req.params.email;
   let userData = req.body;
-  
-  if (userData.password) {
-    let error = Users.validatePassword(userData.password);
-    if (error) return next(httpError(400, error));
-  }
 
   try {
     let user = await Users.findOne({ email: userEmail });
@@ -70,19 +79,8 @@ router.put('/:email', authorize([rules.admin, rules.self]), async (req, res, nex
     return res.jsonApi(null, user);
   }
   catch (err) {
-    return next(httpError(500, err));
-  }
-});
-
-/* POST user create. */
-router.post('/', authorize([rules.admin]), async (req, res, next) => {
-  try {
-    let { user, isNew } = await Users.findOrCreateByEmail(req.body);
-    if (isNew) return res.jsonApi(null, user);
-    else return next(httpError(409, "user already exists"));
-  }
-  catch (err) {
-    return next(httpError(500, err));
+    if (err.name && err.name === 'ValidationError') return next(httpError(400, err.message || 'validation error'));
+    else return next(httpError(500, err));
   }
 });
 

@@ -3,17 +3,38 @@ const bcrypt = require('bcrypt');
 const pwConf = require('../../config').passwords;
 const Schema = mongoose.Schema;
 
+// Validation rules
+function validate(field) {
+  const validation = {
+    // Validate password field
+    password: [
+      function (value) {
+        return (value.length >= pwConf.length.min && value.length <= pwConf.length.max);
+      },
+      'password does not match validation settings'
+    ],
+
+    // Validate email field
+    email: [
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      'email does not match validation pattern'
+    ]
+  };
+  return validation[field] || [() => (true), ''];
+}
+
 //
 // User schema
 //
 const UsersSchema = new Schema(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    role: { type: String, required: true },
-    password: { type: String, required: true, select: false }
+    email: { type: String, required: true, unique: true, validate: validate('email') },
+    role: { type: String, enum : ['admin', 'user'], required: true },
+    password: { type: String, required: true, select: false, validate: validate('password') }
   },
   {
+    strict: 'throw',
     timestamps: true
   }
 );
@@ -25,7 +46,8 @@ UsersSchema.virtual('isAdmin').get(function () {
 // List of properties which can be updated
 const ALLOWED_UPDATES = [
   'name',
-  'password'
+  'password',
+  'role'
 ];
 
 //
@@ -54,14 +76,6 @@ UsersSchema.statics.authenticate = async function (email, password) {
     isAuth = await bcrypt.compare(password, user.password);
   }
   return { user, isAuth }
-}
-
-UsersSchema.statics.validatePassword = function (password) {
-  let error = null;
-  if (password.length < pwConf.length.min || password.length > pwConf.length.max) {
-    error = `invalid password length ${password.length} (${JSON.stringify(pwConf.length)}`;
-  }
-  return error;
 }
 
 //

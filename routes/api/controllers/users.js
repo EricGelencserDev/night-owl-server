@@ -8,7 +8,7 @@ const { authorize } = require('../../../auth');
 let rules = {
   isAdmin: {
     fields: {
-      role: 'admin'
+      isAdmin: true
     }
   },
   isSelf: {
@@ -75,6 +75,7 @@ router.put('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res,
   try {
     let user = await Users.findOne({ email: userEmail });
     if (!user) return next(httpError(404, 'user not found'));
+    if (user.role !== userData.role && !req.user.isAdmin ) return next(httpError(401, 'cannot change role'))
     user = await user.updateValues(userData);
     return res.jsonApi(null, user);
   }

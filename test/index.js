@@ -242,6 +242,19 @@ describe('test user functions', function () {
         resp2.body.data.name.should.eq(user.name);
         return resp;
     })
+
+    it('should reject test user from changing its role', async function () {
+        let updatedUser ={
+            ...user,
+            role: 'admin'
+        };
+        let resp = await updateUser(updatedUser);
+        resp.status.should.eq(401);
+        let resp2 = await getUsers(user.email);
+        resp2.status.should.eq(200);
+        resp2.body.data.role.should.eq('user');
+        return resp;
+    })
 });
 
 describe('test updated user', function () {

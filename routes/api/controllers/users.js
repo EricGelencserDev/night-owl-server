@@ -6,15 +6,15 @@ const { authorize, isLoggedIn } = require('../../../auth');
 
 // Route authorization rules
 let rules = {
-  isAdmin: {
-    fields: {
-      isAdmin: true
-    }
+
+  // Allow if user is admin
+  isAdmin: (req) => {
+    return req.user.isAdmin;
   },
-  isSelf: {
-    params: {
-      email: 'email'
-    }
+
+  // Allow if email param is the same as user's email
+  isSelf: (req) => {
+    return (req.params.email === req.user.email);
   }
 }
 

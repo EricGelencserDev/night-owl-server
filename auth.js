@@ -42,25 +42,9 @@ module.exports.authenticate = async (email, password, done) => {
 module.exports.authorize = (rules) => {
     return (req, res, next) => {
         try {
-            let user = req.user;
-
             // If any rule passes, allow through
             let isAuth = rules.some(rule => {
-                // Handle user field rules
-                if (rule.fields) {
-                    let fields = Object.keys(rule.fields);
-                    return fields.every(field => {
-                        return user[field] === rule.fields[field];
-                    });
-                };
-
-                // Handle request parameter rules
-                if (rule.params) {
-                    let params = Object.keys(rule.params);
-                    return params.every(param => {
-                        return user[rule.params[param]] === req.params[param];
-                    });
-                };
+                return rule(req);
             });
 
             // If a rule passed allow request through

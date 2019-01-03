@@ -1,9 +1,24 @@
 const HttpError = require('http-errors');
 
-module.exports.jsonQuery = function (req, res, next) {
-    req.jsonQuery = {};
+//
+// Middleware to add a req.jsonQuery.filter object
+//
+module.exports.jsonFilter = function (req, res, next) {
+    req.jsonQuery = req.jsonQuery || {};
     try {
         req.jsonQuery.filter = JSON.parse(req.query.filter || null);
+        next();
+    }
+    catch {
+        return next(HttpError(400, 'bad json query object'));
+    }
+}
+//
+// Middleware to add a req.jsonQuery.fields object
+//
+module.exports.jsonFields = function (req, res, next) {
+    req.jsonQuery = req.jsonQuery || {};
+    try {
         req.jsonQuery.fields = JSON.parse(req.query.fields || null);
         next();
     }
@@ -11,7 +26,6 @@ module.exports.jsonQuery = function (req, res, next) {
         return next(HttpError(400, 'bad json query object'));
     }
 }
-
 //
 // Middleware to set up custom jsonApi response handling
 //

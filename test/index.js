@@ -64,6 +64,7 @@ async function createGig(gig) {
 }
 
 async function getGigs(id, query) {
+    id = id || '';
     try {
         return await agent
             .get(url(`gigs/${id}`, query))
@@ -341,6 +342,12 @@ describe('test gigs user', function () {
 
     beforeEach(login(user));
     afterEach(logout);
+
+    it('should reject user listing all gigs', async function () {
+        let resp = await getGigs();
+        resp.status.should.eq(401);
+        return resp;
+    })
 
     it('should allow user to create a gig', async function () {
         let resp = await createGig(new Gig());

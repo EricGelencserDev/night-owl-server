@@ -1,7 +1,7 @@
 let chai = require('chai');
 let agent = require('superagent').agent();
 let uniqid = require('uniqid');
-let { Users, disconnect } = require('../models');
+let { Users, Gigs, disconnect } = require('../models');
 chai.should();
 
 class User {
@@ -29,11 +29,51 @@ class User {
     }
 }
 
-let url = (endpoint, filter, fields) => {
-    let jsonFilter = filter?`?filter=${JSON.stringify(filter)}`:'';
-    let jsonFields = fields?`?fields=${JSON.stringify(fields)}`:'';
-    return `http://localhost:3000/api/${endpoint}${jsonFilter}${jsonFields}`
+class Gig {
+    constructor() {
+        this.name = `test gig ${uniqid()}`;
+        this.date = new Date();
+        this.type = 'birthday';
+        this.address = '1134 Felspar St #3';
+        this.genres = ['jazz', 'big band', 'swing'];
+    }
+}
+
+let url = (endpoint, queries) => {
+    let query = [];
+    queries = queries || {};
+    if (queries.filter) query.push(`filter=${JSON.stringify(queries.filter)}`);
+    if (queries.fields) query.push(`fields=${JSON.stringify(queries.fields)}`);
+    if (queries.includes) query.push(`includes=${JSON.stringify(queries.includes)}`);
+
+    let queryStr = query.length ? `?${query.join('&')}` : '';
+    let url = `http://localhost:3000/api/${endpoint}${queryStr}`;
+    return url;
 };
+
+async function createGig(gig) {
+    try {
+        return await agent
+            .post(url('gigs'))
+            .set('Accept', 'application/json')
+            .set('Content-Type', 'application/json')
+            .send(gig);
+    } catch (err) {
+        return err;
+    }
+}
+
+async function getGigs(id, query) {
+    try {
+        return await agent
+            .get(url(`gigs/${id}`, query))
+            .set('Accept', 'application/json')
+            .set('Content-Type', 'application/json')
+            .send(user);
+    } catch (err) {
+        return err;
+    }
+}
 
 async function createUser(user) {
     try {
@@ -47,11 +87,12 @@ async function createUser(user) {
     }
 }
 
-async function getUsers(email, filter, fields) {
-    let userEmail= email ? `/${email}` : '';
+async function getUsers(email, query) {
+    let userEmail = email ? `/${email}` : '';
     try {
+        let _url = url(`users/${userEmail}`, query)
         return await agent
-            .get(url(`users/${userEmail}`, filter, fields))
+            .get(_url)
             .set('Accept', 'application/json')
             .set('Content-Type', 'application/json')
             .send(user);
@@ -101,19 +142,14 @@ async function logout() {
 //
 // Setup test users
 //
-admin = new User('admin');
-user = new User('user');
+let admin = new User('admin');
+let user = new User('user');
 
 before(async function () {
     try {
         await Users.remove({});
-        let users = await Users.find();
-        users.should.be.an('array');
-        users.length.should.eq(0);
         await new Users(admin).save();
-        users = await Users.find();
-        users.should.be.an('array');
-        users.length.should.eq(1);
+        await new Gigs(new Gig());
     }
     catch (err) {
         console.error('error initializing database:', err);
@@ -140,7 +176,7 @@ describe('test admin functions', function () {
         })
     })
 
-    describe('test read users', function () {
+    describe('test read users and gigs', function () {
 
         it('should allow admin to list users', async function () {
             let resp = await getUsers();
@@ -159,7 +195,9 @@ describe('test admin functions', function () {
 
         it('should allow admin to get list of users using json query', async function () {
             let resp = await getUsers('', {
-                role: 'user'
+                filter: {
+                    role: 'user'
+                }
             });
             resp.status.should.eq(200);
             resp.body.data.length.should.eq(1);
@@ -167,7 +205,10 @@ describe('test admin functions', function () {
         })
 
         it('should allow admin to get list of all users with selected fields', async function () {
-            let resp = await getUsers('', null, ['email']);
+            let resp = await getUsers('', {
+                fields: ['email'],
+                includes: ['gigs']
+            });
             resp.status.should.eq(200);
             resp.body.data.length.should.eq(2);
             resp.body.data[0].should.have.property('email');
@@ -179,7 +220,6 @@ describe('test admin functions', function () {
             return resp;
         })
     })
-
 
     describe('test update users', function () {
 
@@ -213,7 +253,6 @@ describe('test admin functions', function () {
             resp.status.should.eq(400);
             return resp;
         })
-
     })
 })
 
@@ -270,7 +309,7 @@ describe('test user functions', function () {
     })
 
     it('should reject test user from changing its role', async function () {
-        let updatedUser ={
+        let updatedUser = {
             ...user,
             role: 'admin'
         };
@@ -284,7 +323,7 @@ describe('test user functions', function () {
 });
 
 describe('test updated user', function () {
-    
+
     beforeEach(login(user));
     afterEach(logout);
 
@@ -294,6 +333,24 @@ describe('test updated user', function () {
         resp.body.data.email.should.eq(user.email);
         resp.body.data.name.should.eq(user.name);
         resp.body.data.role.should.eq(user.role);
+        return resp;
+    })
+})
+
+describe('test gigs user', function () {
+
+    beforeEach(login(user));
+    afterEach(logout);
+
+    it('should allow user to create a gig', async function () {
+        let resp = await createGig(new Gig());
+        resp.status.should.eq(200);
+        return resp;
+    })
+
+    it('should allow user to list their gigs', async function () {
+        let resp = await getGigs('mine');
+        resp.status.should.eq(200);
         return resp;
     })
 })

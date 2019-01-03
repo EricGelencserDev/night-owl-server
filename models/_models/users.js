@@ -35,12 +35,26 @@ const UsersSchema = new Schema(
   },
   {
     strict: 'throw',
-    timestamps: true
+    timestamps: true,
+    toObject: {
+      getters: true
+    },
+    toJSON: {
+      virtuals: true
+    }
   }
 );
 
+// Add a virtual isAdmin boolean
 UsersSchema.virtual('isAdmin').get(function () {
   return this.role === 'admin';
+});
+
+// Add a virtual gigs collection
+UsersSchema.virtual('gigs', {
+  ref: 'Gigs',
+  localField: '_id',
+  foreignField: 'owner'
 });
 
 // List of properties which can be updated

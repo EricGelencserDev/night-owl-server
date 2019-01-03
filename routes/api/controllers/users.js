@@ -22,9 +22,14 @@ let rules = {
 router.use(isLoggedIn);
 
 /* GET users listing with query string */
-router.get('/', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
+router.get('/', authorize([rules.isAdmin]), async (req, res, next) => {
   try {
-    let users = await Users.find(req.jsonQuery.filter, req.jsonQuery.fields);
+    let { filter, fields, includes } = req.jsonQuery;
+    let userQuery = Users.find(filter, fields);
+    includes.forEach(collection => {
+      userQuery.populate(collection);
+    });
+    let users = await userQuery;
     return res.jsonApi(null, users);
   }
   catch (err) {
@@ -35,8 +40,13 @@ router.get('/', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next)
 /* GET current user */
 router.get('/me', async (req, res, next) => {
   try {
-    let query = { email: req.user.email }
-    let user = await Users.findOne(query);
+    let { fields, includes } = req.jsonQuery;
+    let query = { email: req.user.email };
+    let userQuery = Users.findOne(query, fields);
+    includes.forEach(collection => {
+      userQuery.populate(collection);
+    });
+    let user = await userQuery;
     return res.jsonApi(null, user);
   }
   catch (err) {
@@ -47,8 +57,13 @@ router.get('/me', async (req, res, next) => {
 /* GET user by email */
 router.get('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
   try {
-    let query = { email: req.params.email }
-    let user = await Users.findOne(query);
+    let { fields, includes } = req.jsonQuery;
+    let query = { email: req.params.email };
+    let userQuery = Users.findOne(query, fields);
+    includes.forEach(collection => {
+      userQuery.populate(collection);
+    })
+    let user = await userQuery;
     return res.jsonApi(null, user);
   }
   catch (err) {
@@ -77,7 +92,7 @@ router.put('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res,
   try {
     let user = await Users.findOne({ email: userEmail });
     if (!user) return next(HttpError(404, 'user not found'));
-    if (user.role !== userData.role && !req.user.isAdmin ) return next(HttpError(401, 'cannot change role'))
+    if (user.role !== userData.role && !req.user.isAdmin) return next(HttpError(401, 'cannot change role'))
     user = await user.updateValues(userData);
     return res.jsonApi(null, user);
   }

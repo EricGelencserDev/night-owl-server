@@ -3,13 +3,27 @@ const HttpError = require('http-errors');
 //
 // Middleware to add a req.jsonQuery.filter object
 //
+module.exports.jsonIncludes = function (req, res, next) {
+    req.jsonQuery = req.jsonQuery || {};
+    try {
+        req.jsonQuery.includes = req.query.includes?JSON.parse(req.query.includes || null):[];
+        next();
+    }
+    catch (err) {
+        return next(HttpError(400, 'bad json query object'));
+    }
+}
+
+//
+// Middleware to add a req.jsonQuery.filter object
+//
 module.exports.jsonFilter = function (req, res, next) {
     req.jsonQuery = req.jsonQuery || {};
     try {
-        req.jsonQuery.filter = JSON.parse(req.query.filter || null);
+        req.jsonQuery.filter = req.query.filter?JSON.parse(req.query.filter || null):{};
         next();
     }
-    catch {
+    catch (err) {
         return next(HttpError(400, 'bad json query object'));
     }
 }
@@ -19,10 +33,10 @@ module.exports.jsonFilter = function (req, res, next) {
 module.exports.jsonFields = function (req, res, next) {
     req.jsonQuery = req.jsonQuery || {};
     try {
-        req.jsonQuery.fields = JSON.parse(req.query.fields || null);
+        req.jsonQuery.fields = req.query.fields?JSON.parse(req.query.fields || null):[];
         next();
     }
-    catch {
+    catch (err) {
         return next(HttpError(400, 'bad json query object'));
     }
 }

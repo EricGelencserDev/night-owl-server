@@ -29,7 +29,11 @@ class User {
     }
 }
 
-let url = (endpoint) => (`http://localhost:3000/api/${endpoint}`);
+let url = (endpoint, filter, fields) => {
+    let jsonFilter = filter?`?filter=${JSON.stringify(filter)}`:'';
+    let jsonFields = fields?`?fields=${JSON.stringify(fields)}`:'';
+    return `http://localhost:3000/api/${endpoint}${jsonFilter}${jsonFields}`
+};
 
 async function createUser(user) {
     try {
@@ -43,11 +47,11 @@ async function createUser(user) {
     }
 }
 
-async function getUsers(email) {
-    let userQuery = email ? `/${email}` : '';
+async function getUsers(email, filter, fields) {
+    let userEmail= email ? `/${email}` : '';
     try {
         return await agent
-            .get(url(`users/${userQuery}`))
+            .get(url(`users/${userEmail}`, filter, fields))
             .set('Accept', 'application/json')
             .set('Content-Type', 'application/json')
             .send(user);
@@ -150,6 +154,28 @@ describe('test admin functions', function () {
             let resp = await getUsers(user.email);
             resp.status.should.eq(200);
             resp.body.data.email.should.eq(user.email);
+            return resp;
+        })
+
+        it('should allow admin to get list of users using json query', async function () {
+            let resp = await getUsers('', {
+                role: 'user'
+            });
+            resp.status.should.eq(200);
+            resp.body.data.length.should.eq(1);
+            return resp;
+        })
+
+        it('should allow admin to get list of all users with selected fields', async function () {
+            let resp = await getUsers('', null, ['email']);
+            resp.status.should.eq(200);
+            resp.body.data.length.should.eq(2);
+            resp.body.data[0].should.have.property('email');
+            resp.body.data[1].should.have.property('email');
+            resp.body.data[0].should.not.have.property('name');
+            resp.body.data[1].should.not.have.property('name');
+            resp.body.data[0].should.not.have.property('role');
+            resp.body.data[1].should.not.have.property('role');
             return resp;
         })
     })

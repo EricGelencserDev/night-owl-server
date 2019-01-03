@@ -1,7 +1,21 @@
+const HttpError = require('http-errors');
+
+module.exports.jsonQuery = function (req, res, next) {
+    req.jsonQuery = {};
+    try {
+        req.jsonQuery.filter = JSON.parse(req.query.filter || null);
+        req.jsonQuery.fields = JSON.parse(req.query.fields || null);
+        next();
+    }
+    catch {
+        return next(HttpError(400, 'bad json query object'));
+    }
+}
+
 //
 // Middleware to set up custom jsonApi response handling
 //
-function jsonApi(req, res, next) {
+module.exports.jsonApi = function (req, res, next) {
 
     // New res function to send a JSON api object back as a response
     function _jsonApi(err, data) {
@@ -39,4 +53,3 @@ function jsonApi(req, res, next) {
     next();
 }
 
-module.exports = jsonApi;

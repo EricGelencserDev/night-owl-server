@@ -24,8 +24,7 @@ router.use(isLoggedIn);
 /* GET users listing with query string */
 router.get('/', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
   try {
-    let query = JSON.parse(req.query.q || null);
-    let users = await Users.find(query);
+    let users = await Users.find(req.jsonQuery.filter, req.jsonQuery.fields);
     return res.jsonApi(null, users);
   }
   catch (err) {

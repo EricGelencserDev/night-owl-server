@@ -4,7 +4,7 @@ const path = require('path');
 const HttpError = require('http-errors');
 const RouteList = require('../../route-list');
 const RouteLoader = require('../../route-loader');
-const jsonApi = require('../../json-api');
+const { jsonApi, jsonQuery } = require('../../json-api');
 
 const CONTROLLER_DIR = path.resolve(__dirname, 'controllers');
 
@@ -12,6 +12,7 @@ let routeList = new RouteList();
 
 // Add jsonApi handler
 router.use(jsonApi);
+router.use(jsonQuery);
 
 // List routes
 router.get('/', (req, res, next) => {

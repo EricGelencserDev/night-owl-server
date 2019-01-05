@@ -1,5 +1,4 @@
 const express = require('express');
-const HttpError = require('http-errors');
 const router = express.Router();
 const { Gigs } = require('../../../models');
 const { authorize, isLoggedIn } = require('../../../auth');
@@ -23,7 +22,7 @@ router.get('/', authorize([rules.isAdmin]), async (req, res, next) => {
         return res.jsonApi(null, gigs);
     }
     catch (err) {
-        return next(HttpError(500, err));
+        return next([500, err]);
     }
 });
 
@@ -34,7 +33,7 @@ router.get('/mine', async (req, res, next) => {
         return res.jsonApi(null, gigs);
     }
     catch (err) {
-        return next(HttpError(500, err));
+        return next([500, err]);
     }
 });
 
@@ -47,8 +46,8 @@ router.post('/', async (req, res, next) => {
         return res.jsonApi(null, gig);
     }
     catch (err) {
-        if (err.name && err.name === 'ValidationError') return next(HttpError(400, err));
-        else return next(HttpError(500, err));
+        if (err.name && err.name === 'ValidationError') return next([400, err]);
+        else return next([500, err]);
     }
 });
 

@@ -42,11 +42,13 @@ class Gig {
 let url = (endpoint, queries) => {
     let query = [];
     queries = queries || {};
-    if (queries.filter) query.push(`filter=${JSON.stringify(queries.filter)}`);
-    if (queries.fields) query.push(`fields=${JSON.stringify(queries.fields)}`);
-    if (queries.includes) query.push(`includes=${JSON.stringify(queries.includes)}`);
-
-    let queryStr = query.length ? `?${query.join('&')}` : '';
+    if (typeof queries === 'string') queryStr = query;
+    else {
+        if (queries.filter) query.push(`filter=${JSON.stringify(queries.filter)}`);
+        if (queries.fields) query.push(`fields=${JSON.stringify(queries.fields)}`);
+        if (queries.includes) query.push(`includes=${JSON.stringify(queries.includes)}`);
+        queryStr = query.length ? `?${query.join('&')}` : '';
+    }
     let url = `http://localhost:3000/api/${endpoint}${queryStr}`;
     return url;
 };

@@ -1,54 +1,18 @@
 const HttpError = require('http-errors');
 
 //
-// Middleware to add a req.jsonQuery.filter object
-//
-module.exports.jsonIncludes = function (req, res, next) {
-    req.jsonQuery = req.jsonQuery || {};
-    try {
-        req.jsonQuery.includes = req.query.includes?JSON.parse(req.query.includes || null):[];
-        next();
-    }
-    catch (err) {
-        return next(HttpError(400, 'bad json query object'));
-    }
-}
-
-//
-// Middleware to add a req.jsonQuery.filter object
-//
-module.exports.jsonFilter = function (req, res, next) {
-    req.jsonQuery = req.jsonQuery || {};
-    try {
-        req.jsonQuery.filter = req.query.filter?JSON.parse(req.query.filter || null):{};
-        next();
-    }
-    catch (err) {
-        return next(HttpError(400, 'bad json query object'));
-    }
-}
-//
-// Middleware to add a req.jsonQuery.fields object
-//
-module.exports.jsonFields = function (req, res, next) {
-    req.jsonQuery = req.jsonQuery || {};
-    try {
-        req.jsonQuery.fields = req.query.fields?JSON.parse(req.query.fields || null):[];
-        next();
-    }
-    catch (err) {
-        return next(HttpError(400, 'bad json query object'));
-    }
-}
-//
 // Middleware to set up custom jsonApi response handling
 //
-module.exports.jsonApi = function (req, res, next) {
+module.exports = function (req, res, next) {
 
     // New res function to send a JSON api object back as a response
     function _jsonApi(err, data) {
         let resp = null;
+
         if (err) {
+            if (Array.isArray(err)) {
+                err = HttpError(err[0], err[1])
+            }
             // set response status to specific status or 500
             res.status(err.status || 500);
 

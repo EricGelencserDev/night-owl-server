@@ -1,6 +1,6 @@
 const path = require('path');
 const mongoose = require('mongoose');
-const { requireDir } = require('../utils');
+const requireDir = require('require-dir');
 
 // Connect to the mongo DB
 const DB_HOST = process.env.DB_HOST || 'localhost';
@@ -25,9 +25,9 @@ const files = requireDir(REQUIRE_PATH);
 
 // Export a models object with each model
 let models = {};
-files.forEach(file => {
-    let modelName = file.exports.modelName;
-    let model = file.exports
+Object.keys(files).forEach(file => {
+    let model = files[file];
+    let modelName = model.modelName;
     models[modelName] = model;
 });
 

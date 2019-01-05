@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const RouteList = require('../route-list');
+const RouteList = require('@rbtdev/express-route-list');
 const api = require('./api');
 const web = require('./web');
 

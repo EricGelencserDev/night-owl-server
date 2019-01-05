@@ -1,14 +1,19 @@
 const HttpError = require('http-errors');
 
 //
-// Middleware to add a req.jsonQuery object
+// Middleware to add a req.jsonQuery object with the following properties:
+// filter: Object which is a mongoDB JSON query
+// fields: Array of fields to include (empty array will include all)
+// populate: Array of related subdocs to populate
 //
 module.exports = function (req, res, next) {
-    req.jsonQuery = {};
     try {
-        req.jsonQuery.filter = req.query.filter?JSON.parse(req.query.filter || null):{};
-        req.jsonQuery.fields = req.query.fields?JSON.parse(req.query.fields || null):[];
-        req.jsonQuery.includes = req.query.includes?JSON.parse(req.query.includes || null):[];
+        if (req.query.json) {
+            req.jsonQuery = req.query.json?JSON.parse(req.query.json || null):{};
+            req.jsonQuery.filter = req.jsonQuery.filter || {};
+            req.jsonQuery.fields = req.jsonQuery.fields || [];
+            req.jsonQuery.includes = req.jsonQuery.populate || [];
+        }
         next();
     }
     catch (err) {

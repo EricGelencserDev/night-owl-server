@@ -23,9 +23,9 @@ router.use(isLoggedIn);
 /* GET users listing with query string */
 router.get('/', authorize([rules.isAdmin]), async (req, res, next) => {
   try {
-    let { filter, fields, includes } = req.jsonQuery;
+    let { filter, fields, populate } = req.jsonQuery;
     let userQuery = Users.find(filter, fields);
-    includes.forEach(collection => {
+    populate.forEach(collection => {
       userQuery.populate(collection);
     });
     let users = await userQuery;
@@ -39,10 +39,10 @@ router.get('/', authorize([rules.isAdmin]), async (req, res, next) => {
 /* GET current user */
 router.get('/me', async (req, res, next) => {
   try {
-    let { fields, includes } = req.jsonQuery;
+    let { fields, populate } = req.jsonQuery;
     let query = { email: req.user.email };
     let userQuery = Users.findOne(query, fields);
-    includes.forEach(collection => {
+    populate.forEach(collection => {
       userQuery.populate(collection);
     });
     let user = await userQuery;
@@ -56,10 +56,10 @@ router.get('/me', async (req, res, next) => {
 /* GET user by email */
 router.get('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res, next) => {
   try {
-    let { fields, includes } = req.jsonQuery;
+    let { fields, populate } = req.jsonQuery;
     let query = { email: req.params.email };
     let userQuery = Users.findOne(query, fields);
-    includes.forEach(collection => {
+    populate.forEach(collection => {
       userQuery.populate(collection);
     })
     let user = await userQuery;

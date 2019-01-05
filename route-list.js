@@ -32,9 +32,10 @@ function parseRouteList(routeList) {
 
 
 class RouteList {
-    constructor () {
+    constructor (path, router) {
         this.routeList = {};
-        this.root = '';
+        this.root = path || '';
+        if (router) this.add('', router);
     }
 
     add(path, router) {

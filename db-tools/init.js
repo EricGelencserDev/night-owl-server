@@ -38,3 +38,28 @@ start().then(process.exit).catch(err => {
     console.error(err);
     process.exit(1);
 });
+
+async function testGigs() {
+    let gigs = [];
+    let done = false;
+    while (!done) {
+        let gig = {}
+        gig.eventName = await prompt('Name');
+        gig.venue = await prompt('Venue');
+        gig.venueAddress = await prompt('Venue Address');
+        gig.band = await prompt('Band', 'NightOwl');
+        gigs.push(gig);
+        console.log();
+        done = (await prompt('Create more gigs?', 'y') === 'y') ? false : true
+        console.log();
+    }
+    const { Gigs } = require('../models');
+    console.log("Creating gigs...");
+    let result = await Gigs.create(gigs);
+    console.log(JSON.stringify(result, null, 2));
+}
+
+testGigs().then(process.exit).catch(err => {
+    console.error(err);
+    process.exit(1);
+});

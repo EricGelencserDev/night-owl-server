@@ -28,10 +28,15 @@ function validate(field) {
 //
 const UsersSchema = new Schema(
   {
-    name: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    image: { type: String, required: true },
     email: { type: String, required: true, unique: true, validate: validate('email') },
     role: { type: String, enum : ['admin', 'user'], required: true },
-    password: { type: String, required: true, select: false, validate: validate('password') }
+    password: { type: String, required: true, select: false, validate: validate('password') },
+    instrument: { type: String, required: true },
+    bands: { type: String, required: true },
+    gigs: { type: String, required: true },
   },
   {
     strict: 'throw',

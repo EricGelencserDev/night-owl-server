@@ -29,7 +29,18 @@ router.get('/', authorize([rules.isAdmin]), async (req, res, next) => {
 /* GET current user's gigs */
 router.get('/mine', async (req, res, next) => {
     try {
-        let gigs = await Gigs.findByOwner(req.user);
+        let gigs = await Gigs.findByOwner(req.user, req.jsonQuery);
+        return res.jsonApi(null, gigs);
+    }
+    catch (err) {
+        return next([500, err]);
+    }
+});
+
+/* GET current members's gigs */
+router.get('/member', async (req, res, next) => {
+    try {
+        let gigs = await Gigs.findByMember(req.user, req.jsonQuery);
         return res.jsonApi(null, gigs);
     }
     catch (err) {

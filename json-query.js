@@ -12,7 +12,7 @@ module.exports = function (req, res, next) {
             req.jsonQuery = req.query.json?JSON.parse(req.query.json || null):{};
             req.jsonQuery.filter = req.jsonQuery.filter || {};
             req.jsonQuery.fields = req.jsonQuery.fields || [];
-            req.jsonQuery.includes = req.jsonQuery.populate || [];
+            req.jsonQuery.populate = req.jsonQuery.populate || [];
         }
         next();
     }

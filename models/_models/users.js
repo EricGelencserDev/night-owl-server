@@ -57,6 +57,13 @@ UsersSchema.virtual('gigs', {
   foreignField: 'owner'
 });
 
+// Add a virtual gigs collection
+UsersSchema.virtual('myGigs', {
+  ref: 'Gigs',
+  localField: '_id',
+  foreignField: 'members'
+});
+
 // List of properties which can be updated
 const ALLOWED_UPDATES = [
   'name',

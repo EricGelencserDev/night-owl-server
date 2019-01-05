@@ -30,12 +30,14 @@ class User {
 }
 
 class Gig {
-    constructor() {
+    constructor(members) {
         this.name = `test gig ${uniqid()}`;
         this.date = new Date();
         this.type = 'birthday';
         this.address = '1134 Felspar St #3';
         this.genres = ['jazz', 'big band', 'swing'];
+        if (members) this.members = members
+        else this.members = [];
     }
 }
 
@@ -142,12 +144,28 @@ async function logout() {
 //
 let admin = new User('admin');
 let user = new User('user');
+let gig = null;
+
+let members = [
+    new User('user'),
+    new User('user'),
+    new User('user'),
+    new User('user'),
+    new User('user'),
+    new User('user'),
+    new User('user'),
+    new User('user')
+]
 
 before(async function () {
     try {
         await Users.remove({});
+        await Gigs.remove({});
         await new Users(admin).save();
-        await new Gigs(new Gig());
+        for (let user in members) {
+            console.log('creating member user')
+            members[user] = await new Users(members[user]).save();
+        }
     }
     catch (err) {
         console.error('error initializing database:', err);
@@ -180,7 +198,7 @@ describe('test admin functions', function () {
             let resp = await getUsers();
             resp.status.should.eq(200);
             resp.body.data.should.be.an('array');
-            resp.body.data.length.should.eq(2);
+            resp.body.data.length.should.eq(10);
             return resp;
         })
 
@@ -198,17 +216,17 @@ describe('test admin functions', function () {
                 }
             });
             resp.status.should.eq(200);
-            resp.body.data.length.should.eq(1);
+            resp.body.data.length.should.eq(9);
             return resp;
         })
 
         it('should allow admin to get list of all users with selected fields', async function () {
             let resp = await getUsers('', {
                 fields: ['email'],
-                includes: ['gigs']
+                populate: ['gigs']
             });
             resp.status.should.eq(200);
-            resp.body.data.length.should.eq(2);
+            resp.body.data.length.should.eq(10);
             resp.body.data[0].should.have.property('email');
             resp.body.data[1].should.have.property('email');
             resp.body.data[0].should.not.have.property('name');
@@ -347,14 +365,27 @@ describe('test gigs user', function () {
     })
 
     it('should allow user to create a gig', async function () {
-        let resp = await createGig(new Gig());
+        let resp = await createGig(new Gig(members));
         resp.status.should.eq(200);
         return resp;
     })
 
     it('should allow user to list their gigs', async function () {
         let resp = await getGigs('mine');
+        gig = resp.body.data[0]
         resp.status.should.eq(200);
+        return resp;
+    })
+})
+
+describe('test membership in gigs', function () {
+    beforeEach(login(members[0]));
+    afterEach(logout);
+    it('should allow member to list their gigs', async function () {
+        let resp = await getGigs('member', { populate: ['members']});
+        resp.status.should.eq(200);
+        resp.body.data.should.be.an('array');
+        resp.body.data.length.should.eq(1);
         return resp;
     })
 })

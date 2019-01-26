@@ -71,7 +71,7 @@ router.get('/:email', authorize([rules.isAdmin, rules.isSelf]), async (req, res,
 });
 
 /* POST user create. */
-router.post('/', authorize([rules.isAdmin]), async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     let { user, isNew } = await Users.findOrCreateByEmail(req.body);
     if (isNew) return res.jsonApi(null, user);
